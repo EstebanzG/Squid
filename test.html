@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magasin d'Instruments de Musique</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            background-color: #555;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .nav {
+            padding: 0;
+            margin: 0;
+            text-align: center;
+            background-color: #333;
+        }
+        .nav a {
+            display: inline-block;
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+        }
+        .nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        .content {
+            padding: 20px;
+        }
+        .form-container {
+            background-color: #f2f2f2;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        input[type=text], input[type=email], input[type=password] {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #04AA6D;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Magasin d'Instruments de Musique</h1>
+</div>
+
+<div class="nav">
+    <a href="#">Accueil</a>
+    <a href="#">Nos produits</a>
+    <a href="#">Nos promotions</a>
+</div>
+
+<div class="content">
+    <h2>Bienvenue dans notre magasin d'instruments de musique</h2>
+    <p>Découvrez notre large sélection d'instruments de musique pour tous les niveaux et tous les budgets. Que vous soyez débutant ou musicien confirmé, vous trouverez chez nous l'instrument qu'il vous faut.</p>
+
+    <h3>Mise en avant d'instruments</h3>
+    <p>Ne manquez pas nos dernières nouveautés et nos offres promotionnelles sur une sélection d'instruments.</p>
+
+    <div class="form-container">
+        <h3>Créez votre compte</h3>
+        <form action="/submit-form" method="post">
+            <label for="civility">Civilité</label>
+            <select id="civility" name="civility">
+                <option value="mr">Monsieur</option>
+                <option value="mrs">Madame</option>
+            </select>
+            <label for="lname">Nom</label>
+            <input type="text" id="lname" name="lastname" required>
+
+            <label for="fname">Prénom</label>
+            <input type="text" id="fname" name="firstname" required>
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="psw">Mot de passe</label>
+            <input type="password" id="psw" name="password" required>
+            <p>Le mot de passe doit contenir au moins 8 caractères, dont une majuscule.</p>
+
+            <button type="submit">Créer mon compte</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
