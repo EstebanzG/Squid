@@ -81,7 +81,7 @@ export class Main implements Renderable {
         const delta = time - this.previousTime;
         this.previousTime = time;
 
-        this.squid.animate(delta, time);
+        this.squid.animate(delta);
         //this.custom.animate();
 
         this.render();
