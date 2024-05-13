@@ -78,7 +78,7 @@ export default class CustomShape implements Object {
         return mesh;
     }
 
-    animate(): void {
+    animate(delta: number): void {
         for (const cube of this.cubes) {
             const acceleration = 0.002;
             const maxSpeed = 0.2;

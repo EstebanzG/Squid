@@ -9,15 +9,14 @@ import {
 
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
-import CustomShape from "./objects/custom.ts";
-import Head from "./objects/head.ts";
+import Squid from "./objects/squid.ts";
 
 export interface Renderable {
     render: () => void;
 }
 
 export interface Object {
-    animate: () => void;
+    animate: (delta: number, time: number) => void;
 }
 
 export class Main implements Renderable {
@@ -25,7 +24,10 @@ export class Main implements Renderable {
     private readonly scene: Scene;
     private readonly renderer: WebGLRenderer;
 
-    private readonly custom: CustomShape;
+   // private readonly custom: CustomShape;
+    private readonly squid: Squid;
+
+    private previousTime: number = 0;
 
     constructor() {
         const container = document.querySelector('.container');
@@ -65,20 +67,25 @@ export class Main implements Renderable {
             });
 
         // Objects initializations
-        new Head(this.scene, this.renderer, this.camera, this);
-        this.custom = new CustomShape(this.scene, this.renderer, this.camera, this);
+        this.squid = new Squid(this.scene, this.renderer, this.camera, this);
+        //this.custom = new CustomShape(this.scene, this.renderer, this.camera, this);
 
         window.addEventListener('resize', () => this.onWindowResize());
 
-        this.animate();
+        this.animate(0);
     }
 
-    animate(): void {
-        requestAnimationFrame(() => this.animate());
+    animate(time: number): void {
+        requestAnimationFrame((t) => this.animate(t));
 
-        this.custom.animate();
+        const delta = time - this.previousTime;
+        this.previousTime = time;
+
+        this.squid.animate(delta, time);
+        //this.custom.animate();
 
         this.render();
+
     }
 
     onWindowResize(): void {
