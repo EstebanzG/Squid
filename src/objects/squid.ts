@@ -1,24 +1,31 @@
-import {Bone, Mesh, MeshBasicMaterial, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import {Bone, Box3, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Scene, WebGLRenderer} from "three";
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {Object, Renderable} from "../main.ts";
 
 export default class Squid implements Object {
+
+    private head: Object3D = new Object3D();
+
+    private tentaclesSkeleton: any[] = [];
 
     private tentacles: any[] = [];
 
     private eye: Mesh | null = null;
 
     constructor(scene: Scene, renderer: WebGLRenderer, camera: PerspectiveCamera, renderable: Renderable) {
-        const loader = new GLTFLoader().setPath('models');
-        loader.load('/squid/pieuvre.gltf', async (gltf: any) => {
-            const model = gltf.scene;
+        const loader: GLTFLoader = new GLTFLoader().setPath('models');
+        loader.load('/squid/pieuvre.gltf', async (object: any) => {
+            const model = object.scene;
             await renderer.compileAsync(model, camera, scene);
 
+            this.head = model.getObjectByName("Tête") as Mesh;
+
             for (let i = 1; i <= 8; i++) {
-                this.tentacles[i - 1] = model.getObjectByName("Armature_" + i).getObjectByName("Tentacule_" + i).skeleton.bones;
+                this.tentaclesSkeleton[i - 1] = model.getObjectByName("Armature_" + i).getObjectByName("Tentacule_" + i).skeleton.bones;
+                this.tentacles[i - 1] = model.getObjectByName("Armature_" + i).getObjectByName("Tentacule_" + i);
             }
 
-            this.tentacles.forEach(tentacle => {
+            this.tentaclesSkeleton.forEach(tentacle => {
                 tentacle.forEach((bone: Bone, index: number) => {
                     if (index === 1) {
                         bone.rotation.x = -1;
@@ -34,7 +41,24 @@ export default class Squid implements Object {
         });
     }
 
-    animate(_delta: number): void {
+    isColliding(bullet: Mesh): boolean {
+        const bulletBox = new Box3().setFromObject(bullet);
+
+        let headbox = new Box3().setFromObject(this.head);
+        if (bulletBox.intersectsBox(headbox)) return true;
+
+        this.tentacles.forEach(function (tentacle) {
+            let boneBox = new Box3().setFromObject(tentacle);
+            if (boneBox.intersectsBox(bulletBox)) {
+                return true;
+            }
+
+        })
+
+        return false;
+    }
+
+    animate(): void {
         if ((new Date()).getSeconds() % 10 === 0) {
             this.wink();
         }
@@ -43,7 +67,7 @@ export default class Squid implements Object {
     }
 
     animateBones(): void {
-        this.tentacles.forEach(function (tentacle, indexTentacle) {
+        this.tentaclesSkeleton.forEach(function (tentacle, indexTentacle) {
             indexTentacle++;
             tentacle.forEach(function (bone: Bone, indexBone: number) {
 

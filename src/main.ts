@@ -1,9 +1,9 @@
 import {
     ACESFilmicToneMapping,
-    EquirectangularReflectionMapping,
-    PerspectiveCamera,
-    Scene,
-    Texture,
+    EquirectangularReflectionMapping, Mesh, Object3D,
+    PerspectiveCamera, Raycaster,
+    Scene, SphereGeometry,
+    Texture, Vector2, Vector3,
     WebGLRenderer
 } from 'three';
 
@@ -19,15 +19,20 @@ export interface Object {
     animate: (delta: number, time: number) => void;
 }
 
+interface VelocityMesh extends Mesh {
+    velocity: Vector3;
+    relationVelocity: Vector3;
+}
+
 export class Main implements Renderable {
     private readonly camera: PerspectiveCamera;
     private readonly scene: Scene;
     private readonly renderer: WebGLRenderer;
+    private readonly raycaster: Raycaster;
 
-   // private readonly custom: CustomShape;
     private readonly squid: Squid;
 
-    private previousTime: number = 0;
+    private bullets: VelocityMesh[] = [];
 
     constructor() {
         const container = document.querySelector('.container');
@@ -44,6 +49,8 @@ export class Main implements Renderable {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.toneMapping = ACESFilmicToneMapping;
         this.renderer.toneMappingExposure = 1;
+
+        this.raycaster = new Raycaster();
 
         container?.appendChild(this.renderer.domElement);
 
@@ -68,24 +75,33 @@ export class Main implements Renderable {
 
         // Objects initializations
         this.squid = new Squid(this.scene, this.renderer, this.camera, this);
-        //this.custom = new CustomShape(this.scene, this.renderer, this.camera, this);
+        //this.shrimp = new Shrimp(this.scene);
 
         window.addEventListener('resize', () => this.onWindowResize());
+        window.addEventListener('click', (event) => this.shootNewBullet(event));
+        window.addEventListener('keypress', (event) => {
+            if (event.key === "c") {
+                this.squid.wink();
+            }
+        });
 
-        this.animate(0);
+        this.animate();
     }
 
-    animate(time: number): void {
-        requestAnimationFrame((t) => this.animate(t));
+    animate(): void {
+        requestAnimationFrame(() => this.animate());
 
-        const delta = time - this.previousTime;
-        this.previousTime = time;
+        this.squid.animate();
 
-        this.squid.animate(delta);
-        //this.custom.animate();
+        this.bullets.forEach((bullet) => {
+            bullet.position.add(bullet.velocity.clone())
+
+            if (this.squid.isColliding(bullet)) {
+                console.log('Squid touched');
+            }
+        });
 
         this.render();
-
     }
 
     onWindowResize(): void {
@@ -103,6 +119,27 @@ export class Main implements Renderable {
         if (this.renderer) {
             this.renderer.render(this.scene, this.camera);
         }
+    }
+
+    shootNewBullet(event: MouseEvent ): void {
+        const bullet = new Object3D();
+        bullet.add(new Mesh(new SphereGeometry))
+
+        bullet.position.copy(this.camera.position);
+        this.scene.add(bullet);
+
+        const velocityBullet = bullet as unknown as VelocityMesh;
+
+        const mouse : Vector2 = new Vector2(
+            (event.clientX / window.innerWidth) * 2 - 1,
+            -(event.clientY / window.innerHeight) * 2 + 1
+        );
+
+        this.raycaster.setFromCamera(mouse, this.camera);
+
+        velocityBullet.velocity = this.raycaster.ray.direction.clone()
+
+        this.bullets.push(velocityBullet)
     }
 }
 
