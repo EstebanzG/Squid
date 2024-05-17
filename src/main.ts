@@ -10,6 +10,7 @@ import {
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RGBELoader} from 'three/addons/loaders/RGBELoader.js';
 import Squid from "./objects/squid.ts";
+import {AudioPlayer} from "./music.ts";
 
 export interface Renderable {
     render: () => void;
@@ -29,6 +30,9 @@ export class Main implements Renderable {
     private readonly scene: Scene;
     private readonly renderer: WebGLRenderer;
     private readonly raycaster: Raycaster;
+
+    private readonly musicPlayer: AudioPlayer = new AudioPlayer();
+    private isPlaying: Boolean = false;
 
     private readonly squid: Squid;
 
@@ -78,7 +82,13 @@ export class Main implements Renderable {
         //this.shrimp = new Shrimp(this.scene);
 
         window.addEventListener('resize', () => this.onWindowResize());
-        window.addEventListener('click', (event) => this.shootNewBullet(event));
+        window.addEventListener('click', (event) => {
+            if (!this.isPlaying) {
+                this.musicPlayer.loadAudio('/public/music/kalash.mp3').then(_ => this.musicPlayer.play());
+                this.isPlaying = true;
+            }
+            this.shootNewBullet(event)
+        });
         window.addEventListener('keypress', (event) => {
             if (event.key === "c") {
                 this.squid.wink();
@@ -91,14 +101,19 @@ export class Main implements Renderable {
     animate(): void {
         requestAnimationFrame(() => this.animate());
 
-        this.squid.animate();
 
-        this.bullets.forEach((bullet) => {
-            bullet.position.add(bullet.velocity.clone())
+        if (this.isPlaying) {
+            this.squid.animate(this.musicPlayer.getMaxFreq()[1]);
+        }
+
+        this.bullets = this.bullets.filter((bullet) => {
+            bullet.position.add(bullet.velocity.clone());
 
             if (this.squid.isColliding(bullet)) {
-                console.log('Squid touched');
+                this.scene.remove(bullet);
+                return false;
             }
+            return true;
         });
 
         this.render();

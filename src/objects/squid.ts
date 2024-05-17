@@ -1,4 +1,14 @@
-import {Bone, Box3, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, Scene, WebGLRenderer} from "three";
+import {
+    Bone,
+    Box3,
+    Mesh,
+    MeshBasicMaterial,
+    Object3D,
+    PerspectiveCamera,
+    Quaternion,
+    Scene, Vector3,
+    WebGLRenderer
+} from "three";
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {Object, Renderable} from "../main.ts";
 
@@ -8,7 +18,7 @@ export default class Squid implements Object {
 
     private tentaclesSkeleton: any[] = [];
 
-    private tentacles: any[] = [];
+    private tentacles: Object3D[] = [];
 
     private eye: Mesh | null = null;
 
@@ -58,27 +68,36 @@ export default class Squid implements Object {
         return false;
     }
 
-    animate(): void {
+    animate(delta: number): void {
         if ((new Date()).getSeconds() % 10 === 0) {
             this.wink();
         }
 
-        this.animateBones();
+        delta = delta / 10;
+        if (delta < 0.11) delta = 0;
+
+        this.applyQuaternion(delta);
+
+        this.animateBones(delta);
     }
 
-    animateBones(): void {
-        this.tentaclesSkeleton.forEach(function (tentacle, indexTentacle) {
+    animateBones(delta: number): void {
+        this.tentaclesSkeleton.forEach((tentacle, indexTentacle) => {
             indexTentacle++;
-            tentacle.forEach(function (bone: Bone, indexBone: number) {
-
+            tentacle.forEach((bone: Bone, indexBone: number) => {
                 let initialRotation = 0;
 
-                if (indexBone === 1) {
-                    initialRotation = -1
+                if (delta != 0 && indexTentacle === 3) {
+                    bone.rotation.x = (delta * indexBone);
+                    return
                 }
 
-                bone.rotation.x = (initialRotation) + ((Math.cos(Date.now() * 0.001) / 40) * (indexTentacle + indexBone));
-                bone.rotation.z = ((Math.cos(Date.now() * 0.001) / 40) * (indexTentacle + indexBone));
+                if (indexBone === 1) {
+                    initialRotation = -1;
+                }
+
+                bone.rotation.x = (initialRotation) + ((Math.cos(Date.now() * 0.001) / 100) * (indexTentacle + indexBone));
+                bone.rotation.z = ((Math.cos(Date.now() * 0.001) / 100) * (indexTentacle + indexBone));
             })
         })
     }
@@ -90,5 +109,11 @@ export default class Squid implements Object {
             if (this.eye === null) return;
             this.eye.material = new MeshBasicMaterial({color: 0xffffff});
         }, 100)
+    }
+
+    applyQuaternion(delta: number): void {
+        const quaternion = new Quaternion();
+        quaternion.setFromAxisAngle(new Vector3(0,delta * 5, 0), Math.PI / 2);
+        this.head.quaternion.copy(quaternion);
     }
 }
